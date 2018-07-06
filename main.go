@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	awards, err := tcb.Fetch()
+	awards, err := tcb.FetchTermList()
 	if err != nil {
 		fmt.Println(err)
 		return

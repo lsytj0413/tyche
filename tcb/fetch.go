@@ -15,14 +15,15 @@
 package tcb
 
 import (
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/axgle/mahonia"
+	"github.com/lsytj0413/tyche/util"
 )
 
 var _ = goquery.NewDocumentFromReader
@@ -64,66 +65,100 @@ type Piece struct {
 }
 
 const (
-	url = "http://kaijiang.500.com/shtml/ssq/18077.shtml"
+	url = "http://kaijiang.500.com/shtml/ssq/"
 )
 
-// Fetch will fetch award data from url
-func Fetch() ([]Award, error) {
-	awards := make([]Award, 0)
+func termToString(term uint32) string {
+	return fmt.Sprintf("%05d", term)
+}
+
+func requestDocumentContent() (content string, err error) {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return
 	}
-	resp, err := http.DefaultClient.Do(request)
+
+	content, err = util.DoRequest(request)
+	return
+}
+
+// FetchTermList will fetch all terms
+func FetchTermList() (terms []uint32, err error) {
+	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
-	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
+		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	content, err := util.DoRequest(request)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	v := mahonia.NewDecoder("gb18030")
-	bodyStr := v.ConvertString(string(body))
-
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(bodyStr))
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	s1 := doc.Find(".kj_tablelist02")
+	termNodes := doc.Find(".kj_main01_right .kjxq_box02 .iSelectBox .iSelectList a")
+	termNodesLength := termNodes.Length()
+	if termNodesLength < 1 {
+		err = errors.New("[.kj_main01_right .kjxq_box02 .iSelectBox .iSelectList a] select length zero")
+		return
+	}
 
-	s1.Each(func(i int, s *goquery.Selection) {
-		// fmt.Println(s.Text())
-	})
-
-	s2 := s1.Find("tr tr")
-
-	var s3 *goquery.Selection
-	s2.Each(func(i int, s *goquery.Selection) {
-		if s3 == nil {
-			if strings.Contains(s.Text(), "出球顺序") {
-				s3 = s
-			}
+	terms = make([]uint32, termNodesLength)
+	var termValue int
+	for i := 0; i < termNodesLength; i++ {
+		s := goquery.NewDocumentFromNode(termNodes.Get(i))
+		termValue, err = strconv.Atoi(s.Text())
+		if err != nil {
+			htmlValue, _ := s.Html()
+			err = fmt.Errorf("select node is unexpected format: %v, %v", htmlValue, err)
+			return
 		}
-		fmt.Println(i)
-	})
 
-	s4 := s3.Find("td")
-	for i := s4.Length() - 1; i >= 0; i-- {
-		n := s4.Get(i)
-		// s5 := goquery.NewDocumentFromNode(n)
-		// fmt.Println(s5.Text())
-		fmt.Println(n.FirstChild.Data)
+		terms[termNodesLength-i-1] = uint32(termValue)
 	}
 
-	// fmt.Println(len(s4.Nodes))
+	return
+}
 
-	// fmt.Println(bodyStr)
+// FetchFromTerm will fetch award data at term
+func FetchFromTerm(term uint32) (award *Award, err error) {
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s/%s.shtml", url, termToString(term)), nil)
+	if err != nil {
+		return
+	}
 
-	return awards, nil
+	content, err := util.DoRequest(request)
+	if err != nil {
+		return
+	}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
+	if err != nil {
+		return
+	}
+
+	termTitleNode := doc.Find(".kj_main01_right .kj_tablelist02 .td_title01 span")
+	if termTitleNode.Length() != 2 {
+		err = fmt.Errorf("[.kj_main01_right .kj_tablelist02 .td_title01 span] select length doesnot equal 2")
+		return
+	}
+
+	termValueNode := termTitleNode.Eq(0).Find("strong")
+	termValue, err := strconv.Atoi(termValueNode.Text())
+	if err != nil {
+		htmlValue, _ := termValueNode.Html()
+		err = fmt.Errorf("select node is unexpected format: %v, %v", htmlValue, err)
+		return
+	}
+	if uint32(termValue) != term {
+		err = fmt.Errorf("termValue[%d] from html doesnot equal to args term[%d]", termValue, term)
+		return
+	}
+
+	// termTimeNodeText := termTitleNode.Eq(1).Text()
+
+	return
 }
