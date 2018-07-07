@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -30,13 +31,13 @@ var _ = goquery.NewDocumentFromReader
 
 // Award 是双色球开奖结果
 type Award struct {
-	Term         uint32
-	AwardDate    time.Time
-	DeadlineDate time.Time
-	Number       []uint8
-	SalesVolume  uint64
-	RemainBonus  uint64
-	Pieces       []Piece
+	Term          uint32
+	AwardOpenDate time.Time
+	DeadlineDate  time.Time
+	Number        []uint8
+	SalesVolume   uint64
+	RemainBonus   uint64
+	Pieces        []Piece
 }
 
 // AwardLevel 是奖项等级
@@ -141,7 +142,13 @@ func FetchFromTerm(term uint32) (award *Award, err error) {
 	}
 
 	termTitleNode := doc.Find(".kj_main01_right .kj_tablelist02 .td_title01 span")
-	if termTitleNode.Length() != 2 {
+	// termTitleNode.Each(func(i int, s *goquery.Selection) {
+	// 	v, _ := s.Html()
+	// 	fmt.Println("--------:   ", v)
+	// })
+	// htmlStr, _ := termTitleNode.Parent().Html()
+	// fmt.Println(htmlStr)
+	if termTitleNode.Length() != 3 {
 		err = fmt.Errorf("[.kj_main01_right .kj_tablelist02 .td_title01 span] select length doesnot equal 2")
 		return
 	}
@@ -158,7 +165,22 @@ func FetchFromTerm(term uint32) (award *Award, err error) {
 		return
 	}
 
-	// termTimeNodeText := termTitleNode.Eq(1).Text()
+	termTimeNodeText := termTitleNode.Eq(1).Text()
+	termTimeRegexp := regexp.MustCompile(`^开奖日期：([[:digit:]]+)年([[:digit:]]+)月([[:digit:]]+)日 兑奖截止日期：([[:digit:]]+)年([[:digit:]]+)月([[:digit:]]+)日$`)
+	v := termTimeRegexp.FindStringSubmatch(strings.TrimSpace(termTimeNodeText))
+	if len(v) != 7 {
+		err = fmt.Errorf("termTimeNodeValue[%s] form html is unexepected format ", termTimeNodeText)
+		return
+	}
+	// fmt.Println(v)
+	for i, v0 := range v {
+		if len(v0) == 1 {
+			v[i] = "0" + v0
+		}
+	}
+	openTimeStr := fmt.Sprintf("%s-%s-%sT00:00:00.000Z", v[1], v[2], v[3])
+	t, err := time.ParseInLocation(time.RFC3339Nano, openTimeStr, time.UTC)
+	fmt.Println(t.Format("2006-01-02 15:04:05"))
 
 	return
 }
