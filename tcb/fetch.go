@@ -182,5 +182,41 @@ func FetchFromTerm(term uint32) (award *Award, err error) {
 	t, err := time.ParseInLocation(time.RFC3339Nano, openTimeStr, time.UTC)
 	fmt.Println(t.Format("2006-01-02 15:04:05"))
 
+	ballNode := doc.Find(".kj_main01_right .kj_tablelist02 .ball_box01 .ball_blue")
+	// if ballNode.Length() != 7 {
+	// 	err = fmt.Errorf("[.kj_main01_right .kj_tablelist02 .ball_box01 li] select length doesnot equal 7")
+	// 	return
+	// }
+	ballBlue := ballNode.Text()
+	fmt.Println("blue ball: ", ballBlue)
+
+	ballNodes := doc.Find(".kj_main01_right .kj_tablelist02 tr td tr td")
+	if ballNodes.Length() != 4 {
+		err = fmt.Errorf("[.kj_main01_right .kj_tablelist02 tr td tr td] select length doesnot equal 4")
+		return
+	}
+	ballReds := ballNodes.Eq(3).Text()
+	// fmt.Println(ballReds)
+	fmt.Println(strings.Split(strings.TrimSpace(ballReds), " "))
+
+	bonusNodes := doc.Find(".kj_main01_right .kj_tablelist02 .cfont1")
+	if bonusNodes.Length() != 2 {
+		err = fmt.Errorf("[.kj_main01_right .kj_tablelist02 .cfont1] select length doesnot equal 2")
+		return
+	}
+	fmt.Println(bonusNodes.Eq(0).Text(), "  :  ", bonusNodes.Eq(1).Text())
+
+	piecesNodes := doc.Find(".kj_main01_right .kj_tablelist02").Eq(1).Find("tr td")
+	if piecesNodes.Length() != 24 {
+		err = fmt.Errorf("[piecesNodes] select length[%d] doesnot equal 24", piecesNodes.Length())
+		return
+	}
+	for i := 4; i < 22; i += 3 {
+		fmt.Println("-------------------------")
+		fmt.Println(piecesNodes.Eq(i).Text())
+		fmt.Println(piecesNodes.Eq(i + 1).Text())
+		fmt.Println(piecesNodes.Eq(i + 2).Text())
+	}
+
 	return
 }
