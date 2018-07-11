@@ -12,8 +12,9 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	_ = termList
 
-	_, err = tcb.FetchFromTerm(termList[0])
+	_, err = tcb.FetchFromTerm(18077)
 	if err != nil {
 		fmt.Println(err)
 		return
