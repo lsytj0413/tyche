@@ -16,8 +16,6 @@ package util
 
 import (
 	"net/http"
-
-	"github.com/lsytj0413/tyche/codec"
 )
 
 // DoRequest will process request and return response body
@@ -30,6 +28,6 @@ func DoRequest(request *http.Request) (content string, err error) {
 		defer resp.Body.Close()
 	}
 
-	content, err = codec.ToUtf8(resp.Body)
+	content, err = ToUtf8(resp.Body)
 	return
 }

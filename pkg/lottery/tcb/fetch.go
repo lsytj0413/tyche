@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/lsytj0413/tyche/util"
+	"github.com/lsytj0413/tyche/pkg/util"
 )
 
 var _ = goquery.NewDocumentFromReader

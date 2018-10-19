@@ -2,35 +2,46 @@
 
 
 [[projects]]
+  digest = "1:a62f6ed230a8cd138a9efbe718e7d0b0294f139266f5f55cd942769a9aac8de2"
   name = "github.com/PuerkitoBio/goquery"
   packages = ["."]
+  pruneopts = "UT"
   revision = "dc2ec5c7ca4d9aae063b79b9f581dd3ea6afd2b2"
   version = "v1.4.1"
 
 [[projects]]
+  digest = "1:66b3310cf22cdc96c35ef84ede4f7b9b370971c4025f394c89a2638729653b11"
   name = "github.com/andybalholm/cascadia"
   packages = ["."]
+  pruneopts = "UT"
   revision = "901648c87902174f774fac311d7f176f8647bdaa"
   version = "v1.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:673c9c345144a4a631ae6f97a80e119367ad2d898306fcb05e64ce29d3b834d5"
   name = "github.com/axgle/mahonia"
   packages = ["."]
+  pruneopts = "UT"
   revision = "3358181d7394e26beccfae0ffde05193ef3be33a"
 
 [[projects]]
   branch = "master"
+  digest = "1:cc9018972f0ec220424cadedf663d90048bafe045c5c82bbec23fa221cb8cf38"
   name = "golang.org/x/net"
   packages = [
     "html",
-    "html/atom"
+    "html/atom",
   ]
+  pruneopts = "UT"
   revision = "32a936f46389aa10549d60bd7833e54b01685d09"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "29e4490a94eafb8f568bb7e014c3700aa5728d349540e8d5c48c9ec89ca0a9bd"
+  input-imports = [
+    "github.com/PuerkitoBio/goquery",
+    "github.com/axgle/mahonia",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
