@@ -12,31 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package svs
 
 import (
 	"fmt"
-
-	"github.com/lsytj0413/tyche/pkg/lottery/tcb"
-	"github.com/lsytj0413/tyche/pkg/svs"
+	"os"
 )
 
-func main() {
-	termList, err := tcb.FetchTermList()
+// Main is entrance of Server, it will block until Server is closed
+func Main() {
+	s, _ := New()
+	ch, err := s.Start()
 	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	_ = termList
-
-	_, err = tcb.FetchFromTerm(18077)
-	if err != nil {
-		fmt.Println(err)
-		return
+		fmt.Fprintf(os.Stderr, "Error At Server Start: %s", err.Error())
+		os.Exit(1)
 	}
 
-	// fmt.Printf("%+v\n", awards)
-	fmt.Println("tyche")
-
-	svs.Main()
+	<-ch
 }

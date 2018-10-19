@@ -12,31 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package conf
 
 import (
-	"fmt"
+	"testing"
 
-	"github.com/lsytj0413/tyche/pkg/lottery/tcb"
-	"github.com/lsytj0413/tyche/pkg/svs"
+	"github.com/stretchr/testify/suite"
 )
 
-func main() {
-	termList, err := tcb.FetchTermList()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	_ = termList
+type confTestSuite struct {
+	suite.Suite
+}
 
-	_, err = tcb.FetchFromTerm(18077)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+func (p *confTestSuite) TestGetConfigObjectOk() {
+	v := New()
+	p.Equal(defaultName, v.Name)
+}
 
-	// fmt.Printf("%+v\n", awards)
-	fmt.Println("tyche")
-
-	svs.Main()
+func TestConfTestSuite(t *testing.T) {
+	p := &confTestSuite{}
+	suite.Run(t, p)
 }

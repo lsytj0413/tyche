@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Current version of the project
-VERSION ?= v1.0.0
+VERSION ?= 0.0.1
 GIT_SHA=$(shell git rev-parse --short HEAD)
 TAGS=$(GIT_SHA)
 

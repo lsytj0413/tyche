@@ -12,31 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package svs
 
 import (
-	"fmt"
+	"encoding/json"
 
-	"github.com/lsytj0413/tyche/pkg/lottery/tcb"
-	"github.com/lsytj0413/tyche/pkg/svs"
+	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	termList, err := tcb.FetchTermList()
-	if err != nil {
-		fmt.Println(err)
-		return
+func wrapperHandler(f func(*gin.Context) (interface{}, error)) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		resp, err := f(c)
+		if err != nil {
+			panic(err)
+		}
+
+		data, err := json.Marshal(resp)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = c.Writer.Write(data)
+		if err != nil {
+			panic(err)
+		}
 	}
-	_ = termList
-
-	_, err = tcb.FetchFromTerm(18077)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// fmt.Printf("%+v\n", awards)
-	fmt.Println("tyche")
-
-	svs.Main()
 }
